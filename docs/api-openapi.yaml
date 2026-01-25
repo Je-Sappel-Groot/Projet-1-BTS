@@ -1,0 +1,29 @@
+openapi: 3.0.3
+info:
+  title: API Projet BTS - Formations
+  version: "1.0.0"
+servers:
+  - url: http://localhost:3000
+paths:
+  /auth/login:
+    post:
+      summary: Connexion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string }
+                password: { type: string }
+      responses:
+        "200":
+          description: OK
+  /formations:
+    get:
+      summary: Liste des formations
+      responses:
+        "200":
+          description: OK
