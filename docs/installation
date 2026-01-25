@@ -1,0 +1,25 @@
+# Installation
+
+## Pré-requis
+- Node.js LTS
+- Serveur SQL (MySQL/MariaDB/PostgreSQL)
+- Git
+
+## Setup BDD
+1. Créer la base (ex: `bts_projet1`)
+2. Importer le schéma:
+   - `sql/schema.sql`
+3. Importer les données de test:
+   - `sql/seed.sql`
+
+## Setup API
+1. Aller dans `backend/`
+2. Installer:
+   - `npm install`
+3. Créer le fichier `.env` à partir de `.env.example`
+4. Lancer:
+   - `npm run dev` (ou `npm start`)
+
+## Vérification
+- Tester une route `GET /health` (si tu la fais)
+- Tester login + endpoints via Postman/Swagger
