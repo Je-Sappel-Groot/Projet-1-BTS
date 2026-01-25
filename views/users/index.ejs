@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+<body>
+  <%- include('../partials/navbar'); %>
+
+  <div class="container my-5">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+      <div>
+        <h1 class="section-title mb-1"><%= title %></h1>
+        <p class="section-subtitle mb-0">Gestion des comptes et roles.</p>
+      </div>
+      <a href="/users/ajouter" class="btn btn-accent">Ajouter un utilisateur</a>
+    </div>
+
+    <div class="card lift-card p-3">
+      <table class="table table-bordered table-hover">
+        <thead>
+          <tr>
+            <th>Nom</th>
+            <th>Prenom</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Statut</th>
+            <th>Telephone</th>
+            <th>Adresse</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="usersTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    async function fetchUsers() {
+      try {
+        const res = await fetch('/api/users');
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message);
+
+        const tbody = document.getElementById('usersTable');
+        tbody.innerHTML = '';
+
+        data.users.forEach(user => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${user.nom || ''}</td>
+            <td>${user.prenom || ''}</td>
+            <td>${user.email}</td>
+            <td>${user.role}</td>
+            <td>${user.status}</td>
+            <td>${user.phone || ''}</td>
+            <td>${user.adresse || ''}</td>
+            <td>
+             <a href="/users/modifier/${user.id}" class="btn btn-outline-dark btn-sm">Modifier</a>
+             <button class="btn btn-danger btn-sm" onclick="supprimer('${user.id}')">Supprimer</button>
+            </td>
+          `;
+          tbody.appendChild(row);
+        });
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function supprimer(id) {
+      if (!confirm('Voulez-vous vraiment supprimer cet utilisateur ?')) return;
+      try {
+        const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message);
+        fetchUsers();
+      } catch (err) {
+        alert('Erreur : ' + err.message);
+      }
+    }
+
+    fetchUsers();
+  </script>
+
+  <%- include('../partials/footer'); %>
+  <script src="/bootstrap/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

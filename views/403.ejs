@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acces refuse</title>
+  <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+<body>
+  <%- include('partials/navbar'); %>
+  <div class="container my-5">
+    <div class="hero text-center">
+      <h1>403 - Acces refuse</h1>
+      <p class="section-subtitle"><%= message || 'Vous ne disposez pas des droits requis.' %></p>
+      <a href="/" class="btn btn-accent">Retour accueil</a>
+    </div>
+  </div>
+  <%- include('partials/footer'); %>
+  <script src="/bootstrap/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

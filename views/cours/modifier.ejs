@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modifier une formation</title>
+  <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+<body>
+  <%- include('../partials/navbar'); %>
+
+  <div class="container my-5">
+    <div class="card lift-card p-4">
+      <h1 class="section-title">Modifier une formation</h1>
+
+      <form id="modifierForm">
+        <div class="mb-3">
+          <label for="nom" class="form-label">Nom de la formation</label>
+          <input type="text" class="form-control" id="nom" value="<%= cours.nom %>">
+        </div>
+
+        <div class="mb-3">
+          <label for="enseignant" class="form-label">Formateur</label>
+          <select id="enseignant" class="form-select" required>
+            <% enseignants.forEach(e => { %>
+              <option value="<%= e.id %>" <%= cours.id_enseignant === e.id ? 'selected' : '' %>>
+                <%= e.nom %> <%= e.prenom %>
+              </option>
+            <% }) %>
+          </select>
+        </div>
+
+        <button type="submit" class="btn btn-accent">Enregistrer</button>
+      </form>
+
+      <div id="message" class="mt-3"></div>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('modifierForm');
+    const messageDiv = document.getElementById('message');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const data = {
+        nom: document.getElementById('nom').value,
+        id_enseignant: document.getElementById('enseignant').value
+      };
+
+      try {
+        const response = await fetch(`/api/cours/<%= cours.id %>`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+          messageDiv.innerHTML = '<div class="alert alert-success">Mise a jour effectuee.</div>';
+        } else {
+          const err = await response.json();
+          messageDiv.innerHTML = `<div class="alert alert-danger">Erreur : ${err.message}</div>`;
+        }
+      } catch (error) {
+        messageDiv.innerHTML = `<div class="alert alert-danger">Erreur : ${error.message}</div>`;
+      }
+    });
+  </script>
+
+  <%- include('../partials/footer'); %>
+  <script src="/bootstrap/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

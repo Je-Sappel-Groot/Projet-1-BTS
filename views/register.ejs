@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inscription - Training Medical Academy</title>
+  <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+<body>
+  <div class="auth-shell">
+    <div class="card auth-card w-100" style="max-width: 980px;">
+      <div class="row g-0">
+        <div class="col-md-5 auth-side">
+          <h2>Creer un compte</h2>
+          <p>Inscription rapide pour acceder a la plateforme.</p>
+          <div class="mt-4">
+            <span class="badge-soft">Roles admin / etudiant / enseignant</span>
+          </div>
+        </div>
+        <div class="col-md-7 p-4 p-md-5">
+          <h3 class="mb-3">Inscription</h3>
+          <p class="text-muted">Completez les informations principales.</p>
+
+          <div id="message"></div>
+
+          <form id="registerForm">
+            <div class="mb-3">
+              <label for="username" class="form-label">Nom d'utilisateur</label>
+              <input type="text" class="form-control" id="username" name="username" required>
+            </div>
+            <div class="mb-3">
+              <label for="email" class="form-label">Email</label>
+              <input type="email" class="form-control" id="email" name="email" required>
+            </div>
+            <div class="mb-3">
+              <label for="password" class="form-label">Mot de passe</label>
+              <input type="password" class="form-control" id="password" name="password" required>
+            </div>
+            <div class="mb-3">
+              <label for="role" class="form-label">Role</label>
+              <select class="form-select" id="role" name="role">
+                <option value="etudiant">Etudiant</option>
+                <option value="enseignant">Enseignant</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-accent w-100">Creer le compte</button>
+          </form>
+
+          <div class="d-flex justify-content-between mt-3">
+            <a href="/login">Deja inscrit ?</a>
+            <a href="/">Retour accueil</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script src="/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script>
+  const form = document.getElementById('registerForm');
+  const messageDiv = document.getElementById('message');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const formData = {
+      username: form.username.value.trim(),
+      email: form.email.value.trim(),
+      password: form.password.value.trim(),
+      role: form.role.value
+    };
+
+    try {
+      const response = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        messageDiv.innerHTML = `<div class="alert alert-success text-center">${data.message}</div>`;
+        setTimeout(() => { window.location.href = '/login'; }, 800);
+      } else {
+        messageDiv.innerHTML = `<div class="alert alert-danger text-center">${data.message}</div>`;
+      }
+    } catch (err) {
+      messageDiv.innerHTML = '<div class="alert alert-danger text-center">Erreur serveur.</div>';
+    }
+  });
+</script>
+</body>
+</html>

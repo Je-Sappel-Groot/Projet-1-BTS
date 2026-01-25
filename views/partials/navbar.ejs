@@ -1,0 +1,101 @@
+<link rel="stylesheet" href="/stylesheets/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<nav class="navbar navbar-expand-lg navbar-dark nav-surface">
+  <div class="container">
+    <a class="navbar-brand brand-mark" href="/">Training Medical Academy</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <% const role = user && user.role ? user.role : null; %>
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item">
+          <a class="nav-link active" href="/"><i class="bi bi-house"></i> Accueil</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/dashboard"><i class="bi bi-grid"></i> Dashboard</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/about"><i class="bi bi-info-circle"></i> A propos</a>
+        </li>
+
+        <% if (role === 'etudiant') { %>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="/etudiants" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Apprenants
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/etudiants">Liste des apprenants</a></li>
+            <li><a class="dropdown-item" href="/etudiants/ajouter">Ajouter un apprenant</a></li>
+          </ul>
+        </li>
+        <% } %>
+
+        <% if (role === 'enseignant') { %>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="/enseignants" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Formateurs
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/enseignants">Liste des formateurs</a></li>
+            <li><a class="dropdown-item" href="/enseignants/ajouter">Ajouter un formateur</a></li>
+          </ul>
+        </li>
+
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="/cours" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Formations
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/cours">Liste des formations</a></li>
+            <li><a class="dropdown-item" href="/cours/ajouter">Ajouter une formation</a></li>
+          </ul>
+        </li>
+
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="/notes" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Evaluations
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/notes">Liste des evaluations</a></li>
+            <li><a class="dropdown-item" href="/notes/ajouter">Ajouter une evaluation</a></li>
+          </ul>
+        </li>
+        <% } %>
+
+        <% if (role === 'admin') { %>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="/users" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Utilisateurs
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/users">Liste des utilisateurs</a></li>
+            <li><a class="dropdown-item" href="/users/ajouter">Ajouter un utilisateur</a></li>
+          </ul>
+        </li>
+
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="/contacts" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Contacts
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/contacts">Liste des contacts</a></li>
+            <li><a class="dropdown-item" href="/contacts/ajouter">Nouveau contact</a></li>
+          </ul>
+        </li>
+        <% } %>
+      </ul>
+
+      <% if (user) { %>
+        <form action="/api/logout" method="POST" class="d-inline">
+          <button type="submit" class="btn btn-light btn-sm">Deconnexion</button>
+        </form>
+      <% } else { %>
+        <div class="d-flex gap-2">
+          <a class="btn btn-outline-light btn-sm" href="/login">Connexion</a>
+          <a class="btn btn-accent btn-sm" href="/register">Inscription</a>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</nav>

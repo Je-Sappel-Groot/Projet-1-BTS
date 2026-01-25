@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Liste des formations</title>
+  <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+<body>
+  <%- include('../partials/navbar'); %>
+
+  <div class="container my-5">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+      <div>
+        <h1 class="section-title mb-1">Formations</h1>
+        <p class="section-subtitle mb-0">Catalogue des formations medicales.</p>
+      </div>
+      <a href="/cours/ajouter" class="btn btn-accent">Ajouter une formation</a>
+    </div>
+
+    <div class="card lift-card p-3">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <span class="badge-soft">Liste</span>
+        <input id="searchInput" type="text" placeholder="Rechercher..." class="form-control w-25" oninput="fetchCours(1)">
+      </div>
+
+      <table class="table table-bordered table-hover">
+        <thead>
+          <tr>
+            <th>Nom de la formation</th>
+            <th>Nom formateur</th>
+            <th>Prenom formateur</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="coursTable"></tbody>
+      </table>
+
+      <nav>
+        <ul class="pagination justify-content-center" id="pagination"></ul>
+      </nav>
+    </div>
+  </div>
+
+  <script>
+    let allCours = [];
+    let currentPage = 1;
+    let totalPages = 1;
+
+    async function fetchCours(page = 1) {
+      try {
+        const searchTerm = document.getElementById('searchInput').value || '';
+        const response = await fetch(`/api/cours?page=${page}&limit=5&search=${encodeURIComponent(searchTerm)}`);
+        const result = await response.json();
+
+        if (!response.ok) throw new Error(result.message || 'Erreur serveur.');
+
+        allCours = result.cours || [];
+        totalPages = result.pagination?.totalPages || 1;
+        currentPage = result.pagination?.page || 1;
+
+        renderTable();
+        renderPagination();
+      } catch (error) {
+        const tbody = document.getElementById('coursTable');
+        tbody.innerHTML = `<tr><td colspan="4" class="text-center text-danger">Erreur API : ${error.message}</td></tr>`;
+      }
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('coursTable');
+      tbody.innerHTML = '';
+
+      if (!allCours.length) {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center">Aucune formation trouvee</td></tr>';
+        return;
+      }
+
+      allCours.forEach(cours => {
+        const enseignant = cours.enseignant || {};
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${cours.nom}</td>
+          <td>${enseignant.nom || ''}</td>
+          <td>${enseignant.prenom || ''}</td>
+          <td>
+            <a href="/cours/modifier/${cours.id}" class="btn btn-outline-dark btn-sm">Modifier</a>
+            <button class="btn btn-danger btn-sm" onclick="supprimerCours(${cours.id})">Supprimer</button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function renderPagination() {
+      const container = document.getElementById('pagination');
+      container.innerHTML = '';
+
+      for (let i = 1; i <= totalPages; i++) {
+        const li = document.createElement('li');
+        li.className = 'page-item' + (i === currentPage ? ' active' : '');
+        li.innerHTML = `<button class="page-link" onclick="fetchCours(${i})">${i}</button>`;
+        container.appendChild(li);
+      }
+    }
+
+    async function supprimerCours(id) {
+      if (!confirm('Voulez-vous vraiment supprimer cette formation ?')) return;
+      try {
+        const response = await fetch(`/api/cours/${id}`, { method: 'DELETE' });
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.message || 'Erreur suppression');
+        }
+        fetchCours(currentPage);
+      } catch (err) {
+        alert('Erreur : ' + err.message);
+      }
+    }
+
+    fetchCours();
+  </script>
+
+  <%- include('../partials/footer'); %>
+  <script src="/bootstrap/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

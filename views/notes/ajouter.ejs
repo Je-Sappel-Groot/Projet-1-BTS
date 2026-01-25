@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ajouter une evaluation</title>
+  <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+<body>
+  <%- include('../partials/navbar'); %>
+
+  <div class="container my-5">
+    <div class="card lift-card p-4">
+      <h1 class="section-title">Ajouter une evaluation</h1>
+
+      <form id="ajouterForm">
+        <div class="mb-3">
+          <label for="etudiant" class="form-label">Apprenant</label>
+          <select id="etudiant" class="form-select" required>
+            <option value="">-- Selectionnez un apprenant --</option>
+            <% etudiants.forEach(e => { %>
+              <option value="<%= e.id %>"><%= e.nom %> <%= e.prenom %></option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label for="cours" class="form-label">Formation</label>
+          <select id="cours" class="form-select" required>
+            <option value="">-- Selectionnez une formation --</option>
+            <% cours.forEach(c => { %>
+              <option value="<%= c.id %>"><%= c.nom %></option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label for="note" class="form-label">Note</label>
+          <input type="number" class="form-control" id="note" min="0" max="20" required>
+        </div>
+
+        <button type="submit" class="btn btn-accent">Ajouter</button>
+      </form>
+
+      <div id="message" class="mt-3"></div>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('ajouterForm');
+    const messageDiv = document.getElementById('message');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const noteData = {
+        id_etudiant: document.getElementById('etudiant').value,
+        id_cours: document.getElementById('cours').value,
+        note: document.getElementById('note').value
+      };
+
+      try {
+        const response = await fetch('/api/notes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(noteData)
+        });
+
+        if (response.ok) {
+          messageDiv.innerHTML = '<div class="alert alert-success">Evaluation ajoutee.</div>';
+          form.reset();
+        } else {
+          const err = await response.json();
+          messageDiv.innerHTML = `<div class="alert alert-danger">Erreur : ${err.message}</div>`;
+        }
+      } catch (error) {
+        messageDiv.innerHTML = `<div class="alert alert-danger">Erreur : ${error.message}</div>`;
+      }
+    });
+  </script>
+
+  <%- include('../partials/footer'); %>
+  <script src="/bootstrap/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

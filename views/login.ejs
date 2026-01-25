@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connexion - Training Medical Academy</title>
+  <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+<body>
+  <div class="auth-shell">
+    <div class="card auth-card w-100" style="max-width: 980px;">
+      <div class="row g-0">
+        <div class="col-md-5 auth-side">
+          <h2>Bienvenue</h2>
+          <p>Connectez-vous pour acceder au suivi des formations medicales.</p>
+          <div class="mt-4">
+            <span class="badge-soft">Acces securise</span>
+          </div>
+        </div>
+        <div class="col-md-7 p-4 p-md-5">
+          <h3 class="mb-3">Se connecter</h3>
+          <p class="text-muted">Saisissez vos identifiants.</p>
+
+          <div id="message"></div>
+
+          <form id="loginForm">
+            <div class="mb-3">
+              <label for="username" class="form-label">Nom d'utilisateur</label>
+              <input type="text" class="form-control" id="username" name="username" required>
+            </div>
+            <div class="mb-3">
+              <label for="password" class="form-label">Mot de passe</label>
+              <input type="password" class="form-control" id="password" name="password" required>
+            </div>
+            <button type="submit" class="btn btn-accent w-100">Connexion</button>
+          </form>
+
+          <div class="d-flex justify-content-between mt-3">
+            <a href="/register">Creer un compte</a>
+            <a href="/">Retour accueil</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script src="/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script>
+  const form = document.getElementById('loginForm');
+  const messageDiv = document.getElementById('message');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const formData = {
+      username: form.username.value.trim(),
+      password: form.password.value.trim()
+    };
+
+    try {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        messageDiv.innerHTML = `<div class="alert alert-success text-center">${data.message}</div>`;
+        setTimeout(() => { window.location.href = '/'; }, 800);
+      } else {
+        messageDiv.innerHTML = `<div class="alert alert-danger text-center">${data.message}</div>`;
+      }
+    } catch (err) {
+      messageDiv.innerHTML = '<div class="alert alert-danger text-center">Erreur serveur.</div>';
+    }
+  });
+</script>
+</body>
+</html>

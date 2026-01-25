@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+<body>
+  <%- include('partials/navbar'); %>
+
+  <div class="container my-5">
+    <div class="hero mb-5">
+      <span class="badge-soft">Plateforme medicale</span>
+      <h1 class="mt-3">Coordonnez vos formations cliniques</h1>
+      <p class="section-subtitle">Un espace unique pour gerer les apprenants, formateurs, formations et evaluations medicales.</p>
+      <div class="d-flex gap-2 flex-wrap">
+        <a href="/dashboard" class="btn btn-accent">Ouvrir le dashboard</a>
+        <a href="/cours" class="btn btn-outline-dark">Voir les formations</a>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="card lift-card h-100">
+          <img src="/images/etud.jpg" class="card-img-top" alt="Apprenants">
+          <div class="card-body">
+            <h5 class="card-title">Parcours apprenants</h5>
+            <p class="card-text">Suivi des inscriptions, presences et competences cliniques.</p>
+            <a href="/etudiants" class="btn btn-dark btn-sm">Acceder</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card lift-card h-100">
+          <img src="/images/cours.jpg" class="card-img-top" alt="Formateurs">
+          <div class="card-body">
+            <h5 class="card-title">Equipe formateurs</h5>
+            <p class="card-text">Organisation des intervenants et des sessions medicales.</p>
+            <a href="/enseignants" class="btn btn-dark btn-sm">Acceder</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card lift-card h-100">
+          <img src="/images/iris.jpg" class="card-img-top" alt="Contact">
+          <div class="card-body">
+            <h5 class="card-title">Support medical</h5>
+            <p class="card-text">Questions logistiques ou pedagogiques ? Contactez-nous.</p>
+            <a href="/contact" class="btn btn-dark btn-sm">Nous contacter</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%- include('partials/footer'); %>
+  <script src="/bootstrap/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

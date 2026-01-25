@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+<body>
+  <%- include('partials/navbar'); %>
+
+  <div class="container my-5">
+    <div class="card lift-card p-4">
+      <h2 class="section-title">Contact</h2>
+      <p class="section-subtitle">Une question sur une formation medicale ? Laissez un message.</p>
+
+      <% if (typeof success !== 'undefined') { %>
+        <div class="alert alert-success text-center"><%= success %></div>
+      <% } %>
+
+      <form action="/contact" method="POST">
+        <div class="mb-3">
+          <label for="name" class="form-label">Nom</label>
+          <input type="text" class="form-control" id="name" name="name" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="email" class="form-label">Email</label>
+          <input type="email" class="form-control" id="email" name="email" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="message" class="form-label">Message</label>
+          <textarea class="form-control" id="message" name="message" rows="4" required></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-accent w-100">Envoyer</button>
+      </form>
+    </div>
+  </div>
+
+  <%- include('partials/footer'); %>
+  <script src="/bootstrap/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
