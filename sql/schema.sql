@@ -1,55 +1,73 @@
-@startuml
-left to right direction
+DROP DATABASE IF EXISTS training_academy;
+CREATE DATABASE training_academy CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+USE training_academy;
 
-actor "Visiteur" as Visitor
-actor "Utilisateur" as User
-actor "Admin" as Admin
-actor "Enseignant" as Teacher
-actor "Etudiant" as Student
-actor "Administratif" as Staff
+-- Utilisateurs
+CREATE TABLE users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  username VARCHAR(100) NOT NULL UNIQUE,
+  email VARCHAR(150) NOT NULL UNIQUE,
+  password VARCHAR(255) NOT NULL,
+  role ENUM('admin','etudiant','enseignant','administratif') NOT NULL DEFAULT 'etudiant',
+  status ENUM('active','inactive','banned') NOT NULL DEFAULT 'active',
+  nom VARCHAR(100) NULL,
+  prenom VARCHAR(100) NULL,
+  phone VARCHAR(30) NULL,
+  adresse VARCHAR(255) NULL,
+  lastLogin DATETIME NULL,
+  resetPasswordToken VARCHAR(255) NULL,
+  resetPasswordExpires DATETIME NULL
+);
 
-User <|-- Admin
-User <|-- Teacher
-User <|-- Student
-User <|-- Staff
+-- Etudiants
+CREATE TABLE etudiants (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nom VARCHAR(100) NOT NULL,
+  prenom VARCHAR(100) NOT NULL,
+  adresse VARCHAR(255) NULL,
+  dob DATE NULL,
+  phone VARCHAR(30) NULL
+);
 
-rectangle "Training Academy" {
-  (S'inscrire) as UC_Register
-  (Se connecter) as UC_Login
-  (Se déconnecter) as UC_Logout
-  (Consulter tableau de bord) as UC_Dashboard
+-- Enseignants
+CREATE TABLE enseignants (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nom VARCHAR(100) NOT NULL,
+  prenom VARCHAR(100) NOT NULL,
+  adresse VARCHAR(255) NULL,
+  dob DATE NULL,
+  phone VARCHAR(30) NULL
+);
 
-  (Gérer utilisateurs) as UC_Users
-  (Gérer enseignants) as UC_Teachers
-  (Gérer étudiants) as UC_Students
-  (Gérer cours) as UC_Courses
-  (Gérer notes) as UC_Notes
-  (Consulter notes) as UC_ViewNotes
-  (Gérer contacts) as UC_Contacts
-}
+-- Cours (formations)
+CREATE TABLE cours (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nom VARCHAR(150) NOT NULL,
+  id_enseignant INT NOT NULL,
+  CONSTRAINT fk_cours_enseignant
+    FOREIGN KEY (id_enseignant) REFERENCES enseignants(id)
+    ON DELETE CASCADE ON UPDATE CASCADE
+);
 
-Visitor --> UC_Register
-Visitor --> UC_Login
+-- Notes (evaluations)
+CREATE TABLE note (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  id_etudiant INT NOT NULL,
+  id_cours INT NOT NULL,
+  note FLOAT NOT NULL,
+  CONSTRAINT fk_note_etudiant
+    FOREIGN KEY (id_etudiant) REFERENCES etudiants(id)
+    ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT fk_note_cours
+    FOREIGN KEY (id_cours) REFERENCES cours(id)
+    ON DELETE CASCADE ON UPDATE CASCADE
+);
 
-User --> UC_Logout
-User --> UC_Dashboard
-
-Admin --> UC_Users
-Admin --> UC_Teachers
-Admin --> UC_Students
-Admin --> UC_Courses
-Admin --> UC_Notes
-Admin --> UC_Contacts
-
-Teacher --> UC_Notes
-Teacher --> UC_Courses
-
-Student --> UC_ViewNotes
-Student --> UC_Courses
-Student --> UC_Contacts
-
-Staff --> UC_Teachers
-Staff --> UC_Students
-Staff --> UC_Courses
-Staff --> UC_Contacts
-@enduml
+-- Contacts
+CREATE TABLE contacts (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(120) NOT NULL,
+  email VARCHAR(150) NOT NULL,
+  message TEXT NOT NULL,
+  created_at DATETIME NULL
+);
