@@ -9,6 +9,9 @@
 </head>
 <body>
   <%- include('../partials/navbar'); %>
+  <% const role = user && user.role ? user.role : ''; %>
+  <% const isEtudiant = role === 'etudiant'; %>
+  <% const canManageCours = role === 'admin' || role === 'administratif'; %>
 
   <div class="container my-5">
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
@@ -16,7 +19,9 @@
         <h1 class="section-title mb-1">Formations</h1>
         <p class="section-subtitle mb-0">Catalogue des formations medicales.</p>
       </div>
-      <a href="/cours/ajouter" class="btn btn-accent">Ajouter une formation</a>
+      <% if (canManageCours) { %>
+        <a href="/cours/ajouter" class="btn btn-accent">Ajouter une formation</a>
+      <% } %>
     </div>
 
     <div class="card lift-card p-3">
@@ -47,6 +52,8 @@
     let allCours = [];
     let currentPage = 1;
     let totalPages = 1;
+    const isEtudiant = <%= isEtudiant ? 'true' : 'false' %>;
+    const canManageCours = <%= canManageCours ? 'true' : 'false' %>;
 
     async function fetchCours(page = 1) {
       try {
@@ -80,14 +87,18 @@
       allCours.forEach(cours => {
         const enseignant = cours.enseignant || {};
         const row = document.createElement('tr');
+        const actionButtons = [];
+        actionButtons.push(`<a href="/sessions/liste?id_cours=${cours.id}" class="btn btn-outline-primary btn-sm">${isEtudiant ? 'Voir sessions' : 'Sessions'}</a>`);
+        if (canManageCours) {
+          actionButtons.push(`<a href="/cours/modifier/${cours.id}" class="btn btn-outline-dark btn-sm">Modifier</a>`);
+          actionButtons.push(`<button class="btn btn-danger btn-sm" onclick="supprimerCours(${cours.id})">Supprimer</button>`);
+        }
+
         row.innerHTML = `
           <td>${cours.nom}</td>
           <td>${enseignant.nom || ''}</td>
           <td>${enseignant.prenom || ''}</td>
-          <td>
-            <a href="/cours/modifier/${cours.id}" class="btn btn-outline-dark btn-sm">Modifier</a>
-            <button class="btn btn-danger btn-sm" onclick="supprimerCours(${cours.id})">Supprimer</button>
-          </td>
+          <td>${actionButtons.join(' ')}</td>
         `;
         tbody.appendChild(row);
       });

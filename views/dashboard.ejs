@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
@@ -9,6 +9,10 @@
 </head>
 <body>
   <%- include('partials/navbar'); %>
+
+  <% const role = user && user.role ? user.role : ''; %>
+  <% const canViewNotes = role === 'admin' || role === 'administratif' || role === 'enseignant'; %>
+  <% const isManager = role === 'admin' || role === 'administratif'; %>
 
   <div class="container my-5">
     <div class="hero mb-4">
@@ -79,10 +83,18 @@
           <h5>Actions rapides</h5>
           <p class="text-muted">Acces aux sections principales.</p>
           <div class="d-grid gap-2">
-            <a class="btn btn-accent" href="/etudiants">Apprenants</a>
-            <a class="btn btn-outline-dark" href="/enseignants">Formateurs</a>
-            <a class="btn btn-outline-dark" href="/cours">Formations</a>
-            <a class="btn btn-outline-dark" href="/notes">Evaluations</a>
+            <a class="btn btn-outline-dark" href="/cours">Cours</a>
+            <a class="btn btn-outline-dark" href="/sessions">Sessions</a>
+            <% if (canViewNotes) { %>
+              <a class="btn btn-outline-dark" href="/notes">Notes</a>
+            <% } %>
+            <% if (isManager) { %>
+              <a class="btn btn-accent" href="/etudiants">Etudiants</a>
+              <a class="btn btn-accent" href="/enseignants">Enseignants</a>
+            <% } %>
+            <% if (role === 'admin') { %>
+              <a class="btn btn-accent" href="/users">Utilisateurs</a>
+            <% } %>
           </div>
         </div>
       </div>

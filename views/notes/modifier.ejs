@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Modifier une evaluation</title>
+  <title>Modifier une note</title>
   <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="/stylesheets/style.css">
 </head>
@@ -12,7 +12,7 @@
 
   <div class="container my-5">
     <div class="card lift-card p-4">
-      <h1 class="section-title">Modifier une evaluation</h1>
+      <h1 class="section-title">Modifier une note</h1>
 
       <form id="modifierForm">
         <div class="mb-3">
@@ -25,16 +25,18 @@
         </div>
 
         <div class="mb-3">
-          <label for="cours" class="form-label">Formation</label>
-          <select id="cours" class="form-select" required>
-            <% cours.forEach(c => { %>
-              <option value="<%= c.id %>" <%= note.id_cours === c.id ? 'selected' : '' %>><%= c.nom %></option>
+          <label for="session" class="form-label">Session</label>
+          <select id="session" class="form-select" required>
+            <% sessions.forEach(s => { %>
+              <option value="<%= s.id %>" <%= note.id_session === s.id ? 'selected' : '' %>>
+                #<%= s.id %> - <%= s.cours ? s.cours.nom : 'Formation' %> (<%= s.date_debut %> -> <%= s.date_fin %>)
+              </option>
             <% }) %>
           </select>
         </div>
 
         <div class="mb-3">
-          <label for="note" class="form-label">Note</label>
+          <label for="note" class="form-label">Note /20</label>
           <input type="number" class="form-control" id="note" min="0" max="20" value="<%= note.note %>" required>
         </div>
 
@@ -54,7 +56,7 @@
 
       const data = {
         id_etudiant: document.getElementById('etudiant').value,
-        id_cours: document.getElementById('cours').value,
+        id_session: document.getElementById('session').value,
         note: document.getElementById('note').value
       };
 

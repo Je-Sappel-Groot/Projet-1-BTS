@@ -25,7 +25,7 @@ const Cours = sequelize.define('Cours', {
   timestamps: false,
 });
 
-// 🔗 Relation avec Enseignant (1 enseignant → plusieurs cours)
+
 Cours.belongsTo(Enseignant, { foreignKey: 'id_enseignant', as: 'enseignant' });
 
 module.exports = Cours;

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+<body>
+  <%- include('../partials/navbar'); %>
+
+  <div class="container my-5">
+    <div class="d-flex justify-content-between align-items-start mb-3">
+      <div>
+        <h1 class="section-title mb-1">Mes notes sessions</h1>
+        <p class="section-subtitle mb-0">Donner ou modifier ma note sur une session (0 a 20).</p>
+      </div>
+      <a href="/sessions/liste" class="btn btn-outline-secondary">Voir les sessions</a>
+    </div>
+
+    <div class="card lift-card p-3 mb-4">
+      <h2 class="h5 mb-3">Donner une note</h2>
+      <form id="noteForm" class="row g-3 align-items-end">
+        <div class="col-md-8">
+          <label class="form-label" for="sessionId">Session</label>
+          <select id="sessionId" class="form-select" required>
+            <option value="">-- Selectionnez une session --</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label" for="note">Note</label>
+          <input id="note" type="number" class="form-control" min="0" max="20" step="0.5" required>
+        </div>
+        <div class="col-md-2 d-grid">
+          <button id="saveBtn" type="submit" class="btn btn-accent">Enregistrer</button>
+        </div>
+      </form>
+      <div id="message" class="mt-3"></div>
+    </div>
+
+    <div class="card lift-card p-3">
+      <h2 class="h5 mb-3">Mes notes existantes</h2>
+      <table class="table table-bordered table-hover">
+        <thead>
+          <tr>
+            <th>ID session</th>
+            <th>Formation</th>
+            <th>Periode</th>
+            <th>Note</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="mesNotesTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const sessionSelect = document.getElementById('sessionId');
+    const noteSelect = document.getElementById('note');
+    const form = document.getElementById('noteForm');
+    const messageDiv = document.getElementById('message');
+    const tableBody = document.getElementById('mesNotesTable');
+    const saveBtn = document.getElementById('saveBtn');
+
+    async function loadSessions() {
+      const res = await fetch('/api/sessions?page=1&limit=1000&archivee=false');
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Erreur chargement sessions');
+
+      sessionSelect.innerHTML = '<option value="">-- Selectionnez une session --</option>';
+      (data.sessions || []).forEach((session) => {
+        const cours = session.cours || {};
+        const option = document.createElement('option');
+        option.value = session.id;
+        option.textContent = `#${session.id} - ${cours.nom || 'Formation'} (${session.date_debut} -> ${session.date_fin})`;
+        sessionSelect.appendChild(option);
+      });
+    }
+
+    async function loadMesNotes() {
+      const res = await fetch('/api/notes/mes-notes');
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Erreur chargement notes');
+
+      const notes = data.notes || [];
+      tableBody.innerHTML = '';
+
+      if (!notes.length) {
+        tableBody.innerHTML = '<tr><td colspan="5" class="text-center">Aucune note enregistree</td></tr>';
+        return;
+      }
+
+      notes.forEach((n) => {
+        const session = n.session || {};
+        const cours = session.cours || {};
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${session.id || '-'}</td>
+          <td>${cours.nom || '(formation)'}</td>
+          <td>${session.date_debut || ''} -> ${session.date_fin || ''}</td>
+          <td>${n.note}/20</td>
+          <td><button class="btn btn-outline-dark btn-sm" onclick="prefillNote(${n.id_session}, ${n.note})">Modifier</button></td>
+        `;
+        tableBody.appendChild(tr);
+      });
+    }
+
+    async function loadMyNoteForSession(sessionId) {
+      if (!sessionId) return;
+      const res = await fetch(`/api/notes/sessions/${sessionId}/note`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Erreur chargement note session');
+
+      if (data.isInscrit === false) {
+        saveBtn.disabled = true;
+        messageDiv.innerHTML = '<div class="alert alert-warning">Inscription requise: vous devez d\'abord vous inscrire a cette session.</div>';
+      } else {
+        saveBtn.disabled = false;
+        messageDiv.innerHTML = '';
+      }
+
+      if (data.myNote) {
+        noteSelect.value = data.myNote.note;
+        saveBtn.textContent = 'Mettre a jour';
+      } else {
+        noteSelect.value = '';
+        saveBtn.textContent = 'Enregistrer';
+      }
+    }
+
+    function prefillNote(sessionId, note) {
+      sessionSelect.value = String(sessionId);
+      noteSelect.value = String(note);
+      saveBtn.textContent = 'Mettre a jour';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    window.prefillNote = prefillNote;
+
+    sessionSelect.addEventListener('change', async () => {
+      try {
+        if (!sessionSelect.value) {
+          saveBtn.disabled = false;
+          messageDiv.innerHTML = '';
+          return;
+        }
+        await loadMyNoteForSession(sessionSelect.value);
+      } catch (err) {
+        messageDiv.innerHTML = `<div class="alert alert-danger">${err.message}</div>`;
+      }
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const sessionId = sessionSelect.value;
+      const note = Number.parseFloat(noteSelect.value);
+
+      if (!sessionId) {
+        messageDiv.innerHTML = '<div class="alert alert-danger">Choisissez une session.</div>';
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/notes/sessions/${sessionId}/note`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ note }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Erreur enregistrement');
+
+        messageDiv.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
+        await loadMesNotes();
+        await loadMyNoteForSession(sessionId);
+      } catch (err) {
+        messageDiv.innerHTML = `<div class="alert alert-danger">${err.message}</div>`;
+      }
+    });
+
+    (async function init() {
+      try {
+        await loadSessions();
+        await loadMesNotes();
+      } catch (err) {
+        messageDiv.innerHTML = `<div class="alert alert-danger">${err.message}</div>`;
+      }
+    })();
+  </script>
+
+  <%- include('../partials/footer'); %>
+  <script src="/bootstrap/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

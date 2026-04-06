@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
@@ -38,7 +38,6 @@
 
           <div class="d-flex justify-content-between mt-3">
             <a href="/register">Creer un compte</a>
-            <a href="/">Retour accueil</a>
           </div>
         </div>
       </div>
@@ -69,7 +68,7 @@
 
       if (data.success) {
         messageDiv.innerHTML = `<div class="alert alert-success text-center">${data.message}</div>`;
-        setTimeout(() => { window.location.href = '/'; }, 800);
+        setTimeout(() => { window.location.href = '/dashboard'; }, 600);
       } else {
         messageDiv.innerHTML = `<div class="alert alert-danger text-center">${data.message}</div>`;
       }

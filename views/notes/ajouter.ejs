@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ajouter une evaluation</title>
+  <title>Ajouter une note</title>
   <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="/stylesheets/style.css">
 </head>
@@ -12,7 +12,7 @@
 
   <div class="container my-5">
     <div class="card lift-card p-4">
-      <h1 class="section-title">Ajouter une evaluation</h1>
+      <h1 class="section-title">Ajouter une note</h1>
 
       <form id="ajouterForm">
         <div class="mb-3">
@@ -26,17 +26,17 @@
         </div>
 
         <div class="mb-3">
-          <label for="cours" class="form-label">Formation</label>
-          <select id="cours" class="form-select" required>
-            <option value="">-- Selectionnez une formation --</option>
-            <% cours.forEach(c => { %>
-              <option value="<%= c.id %>"><%= c.nom %></option>
+          <label for="session" class="form-label">Session</label>
+          <select id="session" class="form-select" required>
+            <option value="">-- Selectionnez une session --</option>
+            <% sessions.forEach(s => { %>
+              <option value="<%= s.id %>">#<%= s.id %> - <%= s.cours ? s.cours.nom : 'Formation' %> (<%= s.date_debut %> -> <%= s.date_fin %>)</option>
             <% }) %>
           </select>
         </div>
 
         <div class="mb-3">
-          <label for="note" class="form-label">Note</label>
+          <label for="note" class="form-label">Note /20</label>
           <input type="number" class="form-control" id="note" min="0" max="20" required>
         </div>
 
@@ -56,7 +56,7 @@
 
       const noteData = {
         id_etudiant: document.getElementById('etudiant').value,
-        id_cours: document.getElementById('cours').value,
+        id_session: document.getElementById('session').value,
         note: document.getElementById('note').value
       };
 
@@ -68,7 +68,7 @@
         });
 
         if (response.ok) {
-          messageDiv.innerHTML = '<div class="alert alert-success">Evaluation ajoutee.</div>';
+          messageDiv.innerHTML = '<div class="alert alert-success">Note ajoutee.</div>';
           form.reset();
         } else {
           const err = await response.json();

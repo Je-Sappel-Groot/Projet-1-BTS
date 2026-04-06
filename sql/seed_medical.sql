@@ -3,9 +3,9 @@ USE training_academy;
 -- Utilisateurs demo (mot de passe: P@ssw0rd!)
 INSERT INTO users (username, email, password, nom, prenom, phone, adresse, role, status)
 VALUES
-('admin', 'admin@medical.tld', '$2b$10$1gk3yF2s0u7dDkuCzZkUOe8m2z9Xj4i5vVYy1O9I6o7e4Qw2TgD1a', 'Martin', 'Claire', '0611223344', '12 rue des Soins, Toulouse', 'admin', 'active'),
-('formateur1', 'formateur1@medical.tld', '$2b$10$1gk3yF2s0u7dDkuCzZkUOe8m2z9Xj4i5vVYy1O9I6o7e4Qw2TgD1a', 'Durand', 'Lucas', '0611223355', '5 avenue du CHU, Toulouse', 'enseignant', 'active'),
-('etudiant1', 'etudiant1@medical.tld', '$2b$10$1gk3yF2s0u7dDkuCzZkUOe8m2z9Xj4i5vVYy1O9I6o7e4Qw2TgD1a', 'Bernard', 'Lea', '0611223366', '18 rue Pasteur, Toulouse', 'etudiant', 'active');
+('admin', 'admin@medical.tld', '$2b$10$rY9LepE950mSfXCPhKyvyubf8a9hOMck6VCF9NNxnEQP6AeqYDWKy', 'Martin', 'Claire', '0611223344', '12 rue des Soins, Toulouse', 'admin', 'active'),
+('formateur1', 'formateur1@medical.tld', '$2b$10$rY9LepE950mSfXCPhKyvyubf8a9hOMck6VCF9NNxnEQP6AeqYDWKy', 'Durand', 'Lucas', '0611223355', '5 avenue du CHU, Toulouse', 'enseignant', 'active'),
+('etudiant1', 'etudiant1@medical.tld', '$2b$10$rY9LepE950mSfXCPhKyvyubf8a9hOMck6VCF9NNxnEQP6AeqYDWKy', 'Bernard', 'Lea', '0611223366', '18 rue Pasteur, Toulouse', 'etudiant', 'active');
 
 -- Etudiants
 INSERT INTO etudiants (nom, prenom, adresse, dob, phone) VALUES
@@ -25,8 +25,15 @@ INSERT INTO cours (nom, id_enseignant) VALUES
 ('Imagerie medicale', 2),
 ('Hygiene hospitaliere', 2);
 
--- Notes (evaluations)
-INSERT INTO note (id_etudiant, id_cours, note) VALUES
+-- Sessions
+INSERT INTO sessions (id_cours, date_debut, date_fin, archivee) VALUES
+(1, '2026-04-08', '2026-04-12', 0),
+(2, '2026-04-22', '2026-04-26', 0),
+(3, '2026-05-06', '2026-05-10', 0),
+(4, '2026-05-20', '2026-05-24', 0);
+
+-- Notes (sur sessions, /20)
+INSERT INTO note (id_etudiant, id_session, note) VALUES
 (1, 1, 15),
 (2, 1, 13),
 (3, 2, 16),

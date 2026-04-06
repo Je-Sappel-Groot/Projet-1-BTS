@@ -1,12 +1,13 @@
-const express = require('express');
+﻿const express = require('express');
 const router = express.Router();
 const { Sequelize } = require('sequelize');
 const Etudiant = require('../models/Etudiant');
 const Enseignant = require('../models/Enseignant');
 const Cours = require('../models/cours');
 const Note = require('../models/note');
+const auth = require('../middelwares/auth');
 
-router.get('/', async (req, res) => {
+router.get('/', auth(['admin', 'administratif', 'enseignant', 'etudiant']), async (req, res) => {
   try {
     const [etudiants, enseignants, cours, notes] = await Promise.all([
       Etudiant.count(),

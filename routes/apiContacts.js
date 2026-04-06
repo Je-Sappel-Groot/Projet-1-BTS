@@ -2,9 +2,9 @@ const express = require('express');
 const router = express.Router();
 const { Op } = require('sequelize');
 const Contact = require('../models/contact');
+const auth = require('../middelwares/auth');
 
-// GET /api/contacts?page=1&limit=5&search=
-router.get('/', async (req, res) => {
+router.get('/', auth(['admin', 'administratif']), async (req, res) => {
   try {
     let { page = 1, limit = 5, search = '' } = req.query;
     page = parseInt(page, 10);
@@ -35,8 +35,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET /api/contacts/:id
-router.get('/:id', async (req, res) => {
+router.get('/:id', auth(['admin', 'administratif']), async (req, res) => {
   try {
     const contact = await Contact.findByPk(req.params.id);
     if (!contact) return res.status(404).json({ message: 'Contact non trouve' });
@@ -46,8 +45,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// POST /api/contacts
-router.post('/', async (req, res) => {
+router.post('/', auth(['admin', 'administratif']), async (req, res) => {
   try {
     const { name, email, message } = req.body;
     if (!name || !email || !message) {
@@ -61,8 +59,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// PUT /api/contacts/:id
-router.put('/:id', async (req, res) => {
+router.put('/:id', auth(['admin', 'administratif']), async (req, res) => {
   try {
     const contact = await Contact.findByPk(req.params.id);
     if (!contact) return res.status(404).json({ message: 'Contact non trouve' });
@@ -75,8 +72,7 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// DELETE /api/contacts/:id
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', auth(['admin', 'administratif']), async (req, res) => {
   try {
     const contact = await Contact.findByPk(req.params.id);
     if (!contact) return res.status(404).json({ message: 'Contact non trouve' });

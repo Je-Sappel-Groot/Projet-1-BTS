@@ -25,14 +25,8 @@ avec utilisateurs, enseignants, étudiants, cours, notes et contacts.
 - EJS (vues)
 - Bootstrap (UI)
 
-### Installation
-Voir le fichier `docs/installation.md`
-
 ### Base de données
 Scripts SQL disponibles dans le dossier `sql/`
-
-### Documentation API
-Voir `docs/api-openapi.yaml`
 
 ### Auteur
 Projet réalisé individuellement par :

@@ -1,17 +1,18 @@
-const express = require('express');
+﻿const express = require('express');
 const router = express.Router();
 const Cours = require('../models/cours');
 const Enseignant = require('../models/Enseignant');
+const auth = require('../middelwares/auth');
 
-router.get('/', (req, res) => {
+router.get('/', auth(['admin', 'administratif', 'enseignant', 'etudiant']), (req, res) => {
   res.redirect('/cours/liste');
 });
 
-router.get('/liste', (req, res) => {
+router.get('/liste', auth(['admin', 'administratif', 'enseignant', 'etudiant']), (req, res) => {
   res.render('cours/liste');
 });
 
-router.get('/ajouter', async (req, res) => {
+router.get('/ajouter', auth(['admin', 'administratif']), async (req, res) => {
   try {
     const enseignants = await Enseignant.findAll();
     res.render('cours/ajouter', { enseignants });
@@ -21,7 +22,7 @@ router.get('/ajouter', async (req, res) => {
   }
 });
 
-router.get('/modifier/:id', async (req, res) => {
+router.get('/modifier/:id', auth(['admin', 'administratif']), async (req, res) => {
   try {
     const cours = await Cours.findByPk(req.params.id, {
       include: [{ model: Enseignant, as: 'enseignant', attributes: ['id', 'nom', 'prenom'] }]

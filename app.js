@@ -5,7 +5,9 @@ const morgan = require('morgan');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const path = require('path');
-const jwt = require('jsonwebtoken');
+
+const https = require('https');
+const fs = require('fs');
 
 const sequelize = require('./config/db'); // ⚠️ Import de Sequelize depuis config/db.js
 
@@ -17,7 +19,9 @@ const apiEnseignantsRouter = require('./routes/apiEnseignants');
 const enseignantsRoutes = require('./routes/enseignants');
 
 const apiCoursRouter = require('./routes/apiCours');
+const apiSessionsRouter = require('./routes/apiSessions');
 const coursRoutes = require('./routes/cours');
+const sessionsRoutes = require('./routes/sessions');
 
 const apiNotesRouter = require('./routes/apiNotes');
 const notesRoutes = require('./routes/notes');
@@ -68,6 +72,7 @@ app.use('/users', usersRouter);
 app.use('/api/etudiants', apiEtudiantsRouter);
 app.use('/api/enseignants', apiEnseignantsRouter);
 app.use('/api/cours', apiCoursRouter);
+app.use('/api/sessions', apiSessionsRouter);
 app.use('/api/notes', apiNotesRouter);
 app.use('/api/contacts', apiContactsRouter);
 app.use('/api/users', apiUsersRouter);
@@ -77,19 +82,13 @@ app.use('/api/dashboard', apiDashboardRouter);
 app.use('/', etudiantsRoutes);
 app.use('/', enseignantsRoutes);
 app.use('/cours', coursRoutes);
+app.use('/sessions', sessionsRoutes);
 app.use('/notes', notesRoutes);
 app.use('/contacts', contactsRoutes);
 app.use('/', authRouter);     // GET /login et /register pour les pages
 app.use('/api', apiAuthRouter); // POST /api/login, POST /api/register, POST /api/logout
 
 
-// 🏠 Page d'accueil (définition du title pour EJS)
-app.get('/', (req, res) => {
-  res.render('index', {
-    title: 'Accueil - IRIS Toulouse',
-    user: req.user // pour afficher nom/prénom dans le navbar
-  });
-});
 
 // ⚠️ Gestion des erreurs 404
 app.use((req, res, next) => {
@@ -111,22 +110,41 @@ app.use((err, req, res, next) => {
 });
 
 // 🚀 Lancer le serveur après la connexion à MySQL
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3010;
+
+// (async () => {
+//   try {
+//     await sequelize.authenticate();
+//     console.log(`✅ Connecté à la base MySQL "${process.env.DB_NAME}" via Sequelize`);
+
+//     // ❗ Si tu veux créer automatiquement les tables (optionnel)
+//     // await sequelize.sync({ alter: false });
+
+//     app.listen(PORT, () => {
+//       console.log(`🚀 Serveur démarré sur http://localhost:${PORT}`);
+//     });
+//   } catch (error) {
+//     console.error('❌ Erreur de connexion MySQL :', error);
+//   }
+// })();
 
 (async () => {
-  try {
-    await sequelize.authenticate();
-    console.log(`✅ Connecté à la base MySQL "${process.env.DB_NAME}" via Sequelize`);
-
-    // ❗ Si tu veux créer automatiquement les tables (optionnel)
-    // await sequelize.sync({ alter: false });
-
-    app.listen(PORT, () => {
-      console.log(`🚀 Serveur démarré sur http://localhost:${PORT}`);
-    });
-  } catch (error) {
-    console.error('❌ Erreur de connexion MySQL :', error);
-  }
+ try {
+ await sequelize.authenticate();
+ console.log(' Connecté à la base MySQL "university" via Sequelize');
+ const options = {
+ key: fs.readFileSync('key.pem'),
+ cert: fs.readFileSync('cert.pem')
+ };
+ https.createServer(options, app).listen(PORT, () => {
+ console.log(` Serveur HTTPS démarré sur https://localhost:${PORT}`);
+ });
+ } catch (error) {
+ console.error(' Erreur de connexion MySQL :', error);
+ }
 })();
 
 module.exports = app;
+
+
+

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+<body>
+  <%- include('../partials/navbar'); %>
+
+  <% const role = user && user.role ? user.role : ''; %>
+  <% const isEtudiant = role === 'etudiant'; %>
+  <% const cours = session.cours || {}; %>
+
+  <div class="container my-5">
+    <div class="d-flex justify-content-between align-items-start mb-3">
+      <div>
+        <h1 class="section-title mb-1">Notes session #<%= session.id %></h1>
+        <p class="section-subtitle mb-0">
+          Formation: <strong><%= cours.nom || 'Inconnue' %></strong>
+          | Du <strong><%= session.date_debut %></strong> au <strong><%= session.date_fin %></strong>
+          <% if (cours.enseignant) { %>
+            | Formateur: <%= cours.enseignant.nom %> <%= cours.enseignant.prenom %>
+          <% } %>
+        </p>
+      </div>
+      <a href="/sessions/liste" class="btn btn-outline-secondary">Retour sessions</a>
+    </div>
+
+    <% if (isEtudiant) { %>
+      <div class="card lift-card p-3 mb-4">
+        <h2 class="h5 mb-3">Donner ma note (0 a 20)</h2>
+        <form id="noteForm" class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label" for="note">Note</label>
+            <input id="note" type="number" class="form-control" min="0" max="20" step="0.5" required>
+          </div>
+          <div class="col-12">
+            <button type="submit" class="btn btn-accent" id="saveNoteBtn">Enregistrer ma note</button>
+          </div>
+        </form>
+        <div id="noteMessage" class="mt-3"></div>
+      </div>
+    <% } %>
+
+    <div class="card lift-card p-3">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h5 mb-0">Notes des etudiants</h2>
+        <span id="moyenneBadge" class="badge-soft">Moyenne: -</span>
+      </div>
+
+      <table class="table table-bordered table-hover">
+        <thead>
+          <tr>
+            <th>Etudiant</th>
+            <th>Note</th>
+          </tr>
+        </thead>
+        <tbody id="notesTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const sessionId = <%= session.id %>;
+    const isEtudiant = <%= isEtudiant ? 'true' : 'false' %>;
+    const notesTable = document.getElementById('notesTable');
+    const moyenneBadge = document.getElementById('moyenneBadge');
+    const noteForm = document.getElementById('noteForm');
+    const noteMessage = document.getElementById('noteMessage');
+    const noteInput = document.getElementById('note');
+    const saveNoteBtn = document.getElementById('saveNoteBtn');
+
+    async function loadNotesSession() {
+      try {
+        const res = await fetch(`/api/notes/sessions/${sessionId}/note`);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Erreur chargement des notes');
+
+        const notes = data.notes || [];
+        renderNotes(notes);
+
+        if (isEtudiant && data.myNote && noteInput) {
+          noteInput.value = data.myNote.note;
+          saveNoteBtn.textContent = 'Mettre a jour ma note';
+        }
+
+        if (isEtudiant && data.isInscrit === false) {
+          noteMessage.innerHTML = '<div class="alert alert-warning">Vous devez etre inscrit a cette session pour la noter.</div>';
+          if (saveNoteBtn) saveNoteBtn.disabled = true;
+          if (noteInput) noteInput.disabled = true;
+        }
+      } catch (err) {
+        notesTable.innerHTML = `<tr><td colspan="2" class="text-danger text-center">${err.message}</td></tr>`;
+      }
+    }
+
+    function renderNotes(notes) {
+      notesTable.innerHTML = '';
+
+      if (!notes.length) {
+        notesTable.innerHTML = '<tr><td colspan="2" class="text-center">Aucune note pour le moment</td></tr>';
+        moyenneBadge.textContent = 'Moyenne: -';
+        return;
+      }
+
+      let somme = 0;
+
+      notes.forEach((item) => {
+        somme += Number(item.note || 0);
+        const etudiant = item.etudiant ? `${item.etudiant.nom} ${item.etudiant.prenom}` : 'Inconnu';
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${etudiant}</td>
+          <td>${item.note}/20</td>
+        `;
+        notesTable.appendChild(tr);
+      });
+
+      const moyenne = (somme / notes.length).toFixed(2);
+      moyenneBadge.textContent = `Moyenne: ${moyenne}/20`;
+    }
+
+    noteForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const payload = {
+        note: Number.parseFloat(noteInput.value),
+      };
+
+      try {
+        const res = await fetch(`/api/notes/sessions/${sessionId}/note`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Erreur enregistrement note');
+
+        noteMessage.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
+        await loadNotesSession();
+      } catch (err) {
+        noteMessage.innerHTML = `<div class="alert alert-danger">${err.message}</div>`;
+      }
+    });
+
+    loadNotesSession();
+  </script>
+
+  <%- include('../partials/footer'); %>
+  <script src="/bootstrap/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

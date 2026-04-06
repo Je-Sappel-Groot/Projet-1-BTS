@@ -1,13 +1,11 @@
-const express = require('express');
+﻿const express = require('express');
 const router = express.Router();
 const { Op } = require('sequelize');
 const Cours = require('../models/cours');
 const Enseignant = require('../models/Enseignant');
+const auth = require('../middelwares/auth');
 
-// ---------------------
-// Liste paginée avec recherche sur nom du cours ou nom/prénom de l'enseignant
-// ---------------------
-router.get('/', async (req, res) => {
+router.get('/', auth(['admin', 'administratif', 'enseignant', 'etudiant']), async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 5;
@@ -15,7 +13,6 @@ router.get('/', async (req, res) => {
 
     const offset = (page - 1) * limit;
 
-    // Condition de recherche
     const whereCondition = search
       ? {
           [Op.or]: [
@@ -58,25 +55,23 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET un cours par ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', auth(['admin', 'administratif', 'enseignant', 'etudiant']), async (req, res) => {
   try {
     const cours = await Cours.findByPk(req.params.id, {
       include: [{ model: Enseignant, as: 'enseignant', attributes: ['id', 'nom', 'prenom'] }]
     });
-    if (!cours) return res.status(404).json({ message: 'Cours non trouvé' });
+    if (!cours) return res.status(404).json({ message: 'Cours non trouve' });
     res.json(cours);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-// POST ajouter un cours
-router.post('/', async (req, res) => {
+router.post('/', auth(['admin', 'administratif']), async (req, res) => {
   try {
     const { nom, id_enseignant } = req.body;
     const enseignant = await Enseignant.findByPk(id_enseignant);
-    if (!enseignant) return res.status(400).json({ message: 'Enseignant non trouvé' });
+    if (!enseignant) return res.status(400).json({ message: 'Enseignant non trouve' });
 
     const cours = await Cours.create({ nom, id_enseignant });
     res.status(201).json(cours);
@@ -85,16 +80,15 @@ router.post('/', async (req, res) => {
   }
 });
 
-// PUT modifier un cours
-router.put('/:id', async (req, res) => {
+router.put('/:id', auth(['admin', 'administratif']), async (req, res) => {
   try {
     const { nom, id_enseignant } = req.body;
     const cours = await Cours.findByPk(req.params.id);
-    if (!cours) return res.status(404).json({ message: 'Cours non trouvé' });
+    if (!cours) return res.status(404).json({ message: 'Cours non trouve' });
 
     if (id_enseignant) {
       const enseignant = await Enseignant.findByPk(id_enseignant);
-      if (!enseignant) return res.status(400).json({ message: 'Enseignant non trouvé' });
+      if (!enseignant) return res.status(400).json({ message: 'Enseignant non trouve' });
     }
 
     await cours.update({ nom, id_enseignant });
@@ -104,14 +98,13 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// DELETE supprimer un cours
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', auth(['admin', 'administratif']), async (req, res) => {
   try {
     const cours = await Cours.findByPk(req.params.id);
-    if (!cours) return res.status(404).json({ message: 'Cours non trouvé' });
+    if (!cours) return res.status(404).json({ message: 'Cours non trouve' });
 
     await cours.destroy();
-    res.json({ message: 'Cours supprimé' });
+    res.json({ message: 'Cours supprime' });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

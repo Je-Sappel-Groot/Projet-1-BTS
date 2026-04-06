@@ -1,14 +1,13 @@
-// routes/auth.js
-const express = require('express');
+﻿const express = require('express');
 const router = express.Router();
 
-// Page login
 router.get('/login', (req, res) => {
+  if (req.user) return res.redirect('/dashboard');
   res.render('login', { title: 'Connexion - IRIS Toulouse' });
 });
 
-// Page register
 router.get('/register', (req, res) => {
+  if (req.user) return res.redirect('/dashboard');
   res.render('register', { title: 'Inscription - IRIS Toulouse' });
 });
 

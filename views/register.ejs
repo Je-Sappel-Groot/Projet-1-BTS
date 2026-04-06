@@ -15,12 +15,12 @@
           <h2>Creer un compte</h2>
           <p>Inscription rapide pour acceder a la plateforme.</p>
           <div class="mt-4">
-            <span class="badge-soft">Roles admin / etudiant / enseignant</span>
+            <span class="badge-soft">Compte etudiant uniquement</span>
           </div>
         </div>
         <div class="col-md-7 p-4 p-md-5">
           <h3 class="mb-3">Inscription</h3>
-          <p class="text-muted">Completez les informations principales.</p>
+          <p class="text-muted">Remplissez toutes les informations du profil.</p>
 
           <div id="message"></div>
 
@@ -38,12 +38,20 @@
               <input type="password" class="form-control" id="password" name="password" required>
             </div>
             <div class="mb-3">
-              <label for="role" class="form-label">Role</label>
-              <select class="form-select" id="role" name="role">
-                <option value="etudiant">Etudiant</option>
-                <option value="enseignant">Enseignant</option>
-                <option value="admin">Admin</option>
-              </select>
+              <label for="nom" class="form-label">Nom</label>
+              <input type="text" class="form-control" id="nom" name="nom" required>
+            </div>
+            <div class="mb-3">
+              <label for="prenom" class="form-label">Prenom</label>
+              <input type="text" class="form-control" id="prenom" name="prenom" required>
+            </div>
+            <div class="mb-3">
+              <label for="phone" class="form-label">Telephone</label>
+              <input type="text" class="form-control" id="phone" name="phone" required>
+            </div>
+            <div class="mb-3">
+              <label for="adresse" class="form-label">Adresse</label>
+              <input type="text" class="form-control" id="adresse" name="adresse" required>
             </div>
             <button type="submit" class="btn btn-accent w-100">Creer le compte</button>
           </form>
@@ -69,7 +77,10 @@
       username: form.username.value.trim(),
       email: form.email.value.trim(),
       password: form.password.value.trim(),
-      role: form.role.value
+      nom: form.nom.value.trim(),
+      prenom: form.prenom.value.trim(),
+      phone: form.phone.value.trim(),
+      adresse: form.adresse.value.trim()
     };
 
     try {

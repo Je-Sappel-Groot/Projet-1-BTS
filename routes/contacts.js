@@ -1,8 +1,9 @@
-const express = require('express');
+﻿const express = require('express');
 const router = express.Router();
 const Contact = require('../models/contact');
+const auth = require('../middelwares/auth');
 
-router.get('/', async (req, res) => {
+router.get('/', auth(['admin', 'administratif']), async (req, res) => {
   try {
     const contacts = await Contact.findAll({ order: [['id', 'ASC']] });
     res.render('contacts/liste', { contacts });
@@ -12,11 +13,11 @@ router.get('/', async (req, res) => {
   }
 });
 
-router.get('/ajouter', (req, res) => {
+router.get('/ajouter', auth(['admin', 'administratif']), (req, res) => {
   res.render('contacts/ajouter');
 });
 
-router.get('/modifier/:id', async (req, res) => {
+router.get('/modifier/:id', auth(['admin', 'administratif']), async (req, res) => {
   try {
     const contact = await Contact.findByPk(req.params.id);
     if (!contact) return res.status(404).render('404', { title: 'Page non trouvee' });

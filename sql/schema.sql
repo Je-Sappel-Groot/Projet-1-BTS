@@ -39,27 +39,13 @@ CREATE TABLE enseignants (
   phone VARCHAR(30) NULL
 );
 
--- Cours (formations)
+-- Cours
 CREATE TABLE cours (
   id INT AUTO_INCREMENT PRIMARY KEY,
   nom VARCHAR(150) NOT NULL,
   id_enseignant INT NOT NULL,
   CONSTRAINT fk_cours_enseignant
     FOREIGN KEY (id_enseignant) REFERENCES enseignants(id)
-    ON DELETE CASCADE ON UPDATE CASCADE
-);
-
--- Notes (evaluations)
-CREATE TABLE note (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  id_etudiant INT NOT NULL,
-  id_cours INT NOT NULL,
-  note FLOAT NOT NULL,
-  CONSTRAINT fk_note_etudiant
-    FOREIGN KEY (id_etudiant) REFERENCES etudiants(id)
-    ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT fk_note_cours
-    FOREIGN KEY (id_cours) REFERENCES cours(id)
     ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -70,4 +56,45 @@ CREATE TABLE contacts (
   email VARCHAR(150) NOT NULL,
   message TEXT NOT NULL,
   created_at DATETIME NULL
+);
+
+-- Sessions
+CREATE TABLE sessions (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  id_cours INT NOT NULL,
+  date_debut DATE NOT NULL,
+  date_fin DATE NOT NULL,
+  archivee TINYINT(1) NOT NULL DEFAULT 0,
+  CONSTRAINT fk_sessions_cours
+    FOREIGN KEY (id_cours) REFERENCES cours(id)
+    ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- Notes (sur sessions, note /20)
+CREATE TABLE note (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  id_etudiant INT NOT NULL,
+  id_session INT NOT NULL,
+  note DECIMAL(5,2) NOT NULL,
+  UNIQUE KEY uk_note_etudiant_session (id_etudiant, id_session),
+  CONSTRAINT fk_note_etudiant
+    FOREIGN KEY (id_etudiant) REFERENCES etudiants(id)
+    ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT fk_note_session
+    FOREIGN KEY (id_session) REFERENCES sessions(id)
+    ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- Inscriptions
+CREATE TABLE inscription (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  id_session INT NOT NULL,
+  id_etudiant INT NOT NULL,
+  UNIQUE KEY uk_inscription_session_etudiant (id_session, id_etudiant),
+  CONSTRAINT fk_inscription_session
+    FOREIGN KEY (id_session) REFERENCES sessions(id)
+    ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT fk_inscription_etudiant
+    FOREIGN KEY (id_etudiant) REFERENCES etudiants(id)
+    ON DELETE CASCADE ON UPDATE CASCADE
 );

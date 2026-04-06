@@ -1,0 +1,80 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ajouter une session</title>
+  <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+<body>
+  <%- include('../partials/navbar'); %>
+
+  <div class="container my-5">
+    <div class="card lift-card p-4">
+      <h1 class="section-title">Ajouter une session</h1>
+
+      <form id="ajouterSessionForm">
+        <div class="mb-3">
+          <label for="id_cours" class="form-label">Cours</label>
+          <select id="id_cours" class="form-select" required>
+            <option value="">-- Selectionnez un cours --</option>
+            <% cours.forEach(c => { %>
+              <option value="<%= c.id %>"><%= c.nom %></option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label for="date_debut" class="form-label">Date debut</label>
+          <input type="date" class="form-control" id="date_debut" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="date_fin" class="form-label">Date fin</label>
+          <input type="date" class="form-control" id="date_fin" required>
+        </div>
+
+        <button type="submit" class="btn btn-accent">Ajouter</button>
+        <a href="/sessions/liste" class="btn btn-outline-secondary">Annuler</a>
+      </form>
+
+      <div id="message" class="mt-3"></div>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('ajouterSessionForm');
+    const messageDiv = document.getElementById('message');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const payload = {
+        id_cours: document.getElementById('id_cours').value,
+        date_debut: document.getElementById('date_debut').value,
+        date_fin: document.getElementById('date_fin').value,
+      };
+
+      try {
+        const response = await fetch('/api/sessions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Erreur creation session');
+
+        messageDiv.innerHTML = '<div class="alert alert-success">Session ajoutee avec succes.</div>';
+        setTimeout(() => { window.location.href = '/sessions/liste'; }, 700);
+      } catch (error) {
+        messageDiv.innerHTML = `<div class="alert alert-danger">Erreur : ${error.message}</div>`;
+      }
+    });
+  </script>
+
+  <%- include('../partials/footer'); %>
+  <script src="/bootstrap/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

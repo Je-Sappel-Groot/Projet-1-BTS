@@ -1,0 +1,185 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inscriptions session</title>
+  <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+<body>
+  <%- include('../partials/navbar'); %>
+
+  <% const role = user && user.role ? user.role : ''; %>
+  <% const isEtudiant = role === 'etudiant'; %>
+  <% const canManageInscriptions = role === 'admin' || role === 'administratif' || isEtudiant; %>
+
+  <div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div>
+        <h1 class="section-title mb-1">Inscriptions session #<%= session.id %></h1>
+        <p class="section-subtitle mb-0">Cours: <%= session.cours ? session.cours.nom : 'Inconnu' %></p>
+      </div>
+      <a href="/sessions/liste" class="btn btn-outline-secondary">Retour sessions</a>
+    </div>
+
+    <div class="card lift-card p-3 mb-4">
+      <h2 class="h5 mb-3"><%= isEtudiant ? "M'inscrire a cette session" : 'Ajouter un etudiant' %></h2>
+      <form id="addInscriptionForm" class="row g-2 align-items-end">
+        <% if (!isEtudiant) { %>
+          <div class="col-md-8">
+            <label for="id_etudiant" class="form-label">Etudiant</label>
+            <select id="id_etudiant" class="form-select" <%= (!canManageInscriptions || session.archivee) ? 'disabled' : '' %> required>
+              <option value="">-- Selectionnez un etudiant --</option>
+              <% etudiants.forEach(e => { %>
+                <option value="<%= e.id %>"><%= e.nom %> <%= e.prenom %></option>
+              <% }) %>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <button id="submitInscriptionBtn" type="submit" class="btn btn-accent w-100" <%= (!canManageInscriptions || session.archivee) ? 'disabled' : '' %>>Ajouter inscription</button>
+          </div>
+        <% } else { %>
+          <div class="col-12">
+            <button id="submitInscriptionBtn" type="submit" class="btn btn-accent w-100" <%= (!canManageInscriptions || session.archivee) ? 'disabled' : '' %>>M'inscrire</button>
+          </div>
+        <% } %>
+      </form>
+      <% if (!canManageInscriptions) { %>
+        <div class="alert alert-info mt-3 mb-0">Vous avez un acces en lecture seule.</div>
+      <% } else if (session.archivee) { %>
+        <div class="alert alert-warning mt-3 mb-0">Session archivee: ajout d'inscription desactive.</div>
+      <% } %>
+      <div id="message" class="mt-3"></div>
+    </div>
+
+    <div class="card lift-card p-3">
+      <h2 class="h5 mb-3">Liste des inscriptions</h2>
+      <table class="table table-bordered table-hover">
+        <thead>
+          <tr>
+            <th>ID etudiant</th>
+            <th>Nom</th>
+            <th>Prenom</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="inscriptionsTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const sessionId = <%= session.id %>;
+    const isEtudiant = <%= isEtudiant ? 'true' : 'false' %>;
+    const canManageInscriptions = <%= canManageInscriptions ? 'true' : 'false' %>;
+    const sessionArchivee = <%= session.archivee ? 'true' : 'false' %>;
+
+    const form = document.getElementById('addInscriptionForm');
+    const messageDiv = document.getElementById('message');
+    const submitButton = document.getElementById('submitInscriptionBtn');
+    let myEtudiantId = null;
+
+    async function fetchSessionDetail() {
+      try {
+        const response = await fetch(`/api/sessions/${sessionId}`);
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Erreur chargement session');
+
+        const tbody = document.getElementById('inscriptionsTable');
+        const inscriptions = data.inscriptions || [];
+        myEtudiantId = data.my_etudiant_id || null;
+        const alreadyInscrit = isEtudiant && myEtudiantId
+          ? inscriptions.some((i) => Number(i.id_etudiant) === Number(myEtudiantId))
+          : false;
+
+        if (submitButton) {
+          submitButton.disabled = !canManageInscriptions || sessionArchivee || alreadyInscrit;
+        }
+
+        if (alreadyInscrit) {
+          messageDiv.innerHTML = '<div class="alert alert-info">Vous etes deja inscrit a cette session.</div>';
+        }
+
+        if (!inscriptions.length) {
+          tbody.innerHTML = '<tr><td colspan="4" class="text-center">Aucune inscription</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = '';
+        inscriptions.forEach(inscription => {
+          const etudiant = inscription.etudiant || {};
+          const canDelete = canManageInscriptions
+            && !sessionArchivee
+            && (!isEtudiant || (myEtudiantId && Number(inscription.id_etudiant) === Number(myEtudiantId)));
+          const action = canDelete
+            ? `<button class="btn btn-danger btn-sm" onclick="supprimerInscription(${inscription.id_etudiant})">Supprimer</button>`
+            : '-';
+
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${inscription.id_etudiant}</td>
+            <td>${etudiant.nom || ''}</td>
+            <td>${etudiant.prenom || ''}</td>
+            <td>${action}</td>
+          `;
+          tbody.appendChild(row);
+        });
+      } catch (error) {
+        document.getElementById('inscriptionsTable').innerHTML =
+          `<tr><td colspan="4" class="text-center text-danger">Erreur: ${error.message}</td></tr>`;
+      }
+    }
+
+    form?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!canManageInscriptions || sessionArchivee) return;
+
+      const payload = isEtudiant ? {} : { id_etudiant: document.getElementById('id_etudiant').value };
+      if (!isEtudiant && !payload.id_etudiant) {
+        messageDiv.innerHTML = '<div class="alert alert-danger">Selectionnez un etudiant.</div>';
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/sessions/${sessionId}/inscriptions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Erreur ajout inscription');
+
+        messageDiv.innerHTML = '<div class="alert alert-success">Inscription ajoutee.</div>';
+        if (!isEtudiant) {
+          form.reset();
+        }
+        fetchSessionDetail();
+      } catch (error) {
+        messageDiv.innerHTML = `<div class="alert alert-danger">Erreur : ${error.message}</div>`;
+      }
+    });
+
+    async function supprimerInscription(etudiantId) {
+      if (!canManageInscriptions || sessionArchivee) return;
+      if (!confirm('Supprimer cette inscription ?')) return;
+      try {
+        const response = await fetch(`/api/sessions/${sessionId}/inscriptions/${etudiantId}`, {
+          method: 'DELETE',
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Erreur suppression inscription');
+
+        fetchSessionDetail();
+      } catch (error) {
+        alert('Erreur : ' + error.message);
+      }
+    }
+
+    fetchSessionDetail();
+  </script>
+
+  <%- include('../partials/footer'); %>
+  <script src="/bootstrap/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

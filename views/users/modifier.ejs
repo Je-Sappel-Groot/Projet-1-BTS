@@ -17,8 +17,28 @@
       <form id="modifierForm">
         <div class="row">
           <div class="col-md-6 mb-3">
+            <label for="username" class="form-label">Nom d'utilisateur</label>
+            <input type="text" id="username" name="username" class="form-control" value="<%= user.username %>" required>
+          </div>
+          <div class="col-md-6 mb-3">
             <label for="email" class="form-label">Email</label>
             <input type="email" id="email" name="email" class="form-control" value="<%= user.email %>" required>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="nom" class="form-label">Nom</label>
+            <input type="text" id="nom" name="nom" class="form-control" value="<%= user.nom || '' %>" required>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="prenom" class="form-label">Prenom</label>
+            <input type="text" id="prenom" name="prenom" class="form-control" value="<%= user.prenom || '' %>" required>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="phone" class="form-label">Telephone</label>
+            <input type="text" id="phone" name="phone" class="form-control" value="<%= user.phone || '' %>">
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="adresse" class="form-label">Adresse</label>
+            <input type="text" id="adresse" name="adresse" class="form-control" value="<%= user.adresse || '' %>">
           </div>
           <div class="col-md-6 mb-3">
             <label for="role" class="form-label">Role</label>
@@ -52,7 +72,12 @@
       e.preventDefault();
 
       const payload = {
+        username: document.getElementById('username').value,
         email: document.getElementById('email').value,
+        nom: document.getElementById('nom').value,
+        prenom: document.getElementById('prenom').value,
+        phone: document.getElementById('phone').value,
+        adresse: document.getElementById('adresse').value,
         role: document.getElementById('role').value,
         status: document.getElementById('status').value
       };

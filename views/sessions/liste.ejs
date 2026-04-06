@@ -1,0 +1,160 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sessions</title>
+  <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+<body>
+  <%- include('../partials/navbar'); %>
+
+  <% const role = user && user.role ? user.role : ''; %>
+  <% const isManager = role === 'admin' || role === 'administratif'; %>
+  <% const canManageInscriptions = isManager || role === 'etudiant'; %>
+
+  <div class="container my-5">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+      <div>
+        <h1 class="section-title mb-1">Sessions</h1>
+        <p class="section-subtitle mb-0">Gestion des sessions de cours.</p>
+      </div>
+      <% if (isManager) { %>
+        <a href="/sessions/ajouter" class="btn btn-accent">Ajouter une session</a>
+      <% } %>
+    </div>
+
+    <div class="card lift-card p-3">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <span class="badge-soft">Liste</span>
+        <input id="searchInput" type="text" placeholder="Rechercher un cours..." class="form-control w-25" oninput="fetchSessions(1)">
+      </div>
+
+      <table class="table table-bordered table-hover">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Cours</th>
+            <th>Date debut</th>
+            <th>Date fin</th>
+            <th>Archivee</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="sessionsTable"></tbody>
+      </table>
+
+      <nav>
+        <ul class="pagination justify-content-center" id="pagination"></ul>
+      </nav>
+    </div>
+  </div>
+
+  <script>
+    let allSessions = [];
+    let currentPage = 1;
+    let totalPages = 1;
+    const selectedCoursId = new URLSearchParams(window.location.search).get('id_cours') || '';
+
+    const isManager = <%= isManager ? 'true' : 'false' %>;
+    const canManageInscriptions = <%= canManageInscriptions ? 'true' : 'false' %>;
+
+    async function fetchSessions(page = 1) {
+      try {
+        const searchTerm = document.getElementById('searchInput').value || '';
+        const query = new URLSearchParams({
+          page: String(page),
+          limit: '5',
+          search: searchTerm,
+        });
+        if (selectedCoursId) {
+          query.set('id_cours', selectedCoursId);
+        }
+
+        const response = await fetch(`/api/sessions?${query.toString()}`);
+        const result = await response.json();
+
+        if (!response.ok) throw new Error(result.message || 'Erreur serveur.');
+
+        allSessions = result.sessions || [];
+        totalPages = result.pagination?.totalPages || 1;
+        currentPage = result.pagination?.page || 1;
+
+        renderTable();
+        renderPagination();
+      } catch (error) {
+        const tbody = document.getElementById('sessionsTable');
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">Erreur API : ${error.message}</td></tr>`;
+      }
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('sessionsTable');
+      tbody.innerHTML = '';
+
+      if (!allSessions.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center">Aucune session trouvee</td></tr>';
+        return;
+      }
+
+      allSessions.forEach(session => {
+        const cours = session.cours || {};
+        const archivee = !!session.archivee;
+        const row = document.createElement('tr');
+
+        const actions = [];
+        if (isManager) {
+          actions.push(`<a href="/sessions/modifier/${session.id}" class="btn btn-outline-dark btn-sm">Modifier</a>`);
+          if (!archivee) {
+            actions.push(`<button class="btn btn-warning btn-sm" onclick="archiverSession(${session.id})">Archiver</button>`);
+          }
+        }
+        if (canManageInscriptions) {
+          actions.push(`<a href="/sessions/inscriptions/${session.id}" class="btn btn-outline-primary btn-sm">Inscriptions</a>`);
+        }
+        actions.push(`<a href="/notes/sessions/${session.id}" class="btn btn-outline-success btn-sm">Notes</a>`);
+
+        row.innerHTML = `
+          <td>${session.id}</td>
+          <td>${cours.nom || '(cours inconnu)'}</td>
+          <td>${session.date_debut || ''}</td>
+          <td>${session.date_fin || ''}</td>
+          <td>${archivee ? 'Oui' : 'Non'}</td>
+          <td>${actions.join(' ') || '-'}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function renderPagination() {
+      const container = document.getElementById('pagination');
+      container.innerHTML = '';
+
+      for (let i = 1; i <= totalPages; i++) {
+        const li = document.createElement('li');
+        li.className = 'page-item' + (i === currentPage ? ' active' : '');
+        li.innerHTML = `<button class="page-link" onclick="fetchSessions(${i})">${i}</button>`;
+        container.appendChild(li);
+      }
+    }
+
+    async function archiverSession(id) {
+      if (!confirm('Archiver cette session ?')) return;
+      try {
+        const response = await fetch(`/api/sessions/${id}/archive`, { method: 'PATCH' });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Erreur archivage');
+        fetchSessions(currentPage);
+      } catch (err) {
+        alert('Erreur : ' + err.message);
+      }
+    }
+
+    fetchSessions();
+  </script>
+
+  <%- include('../partials/footer'); %>
+  <script src="/bootstrap/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

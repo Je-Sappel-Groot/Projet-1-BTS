@@ -1,7 +1,7 @@
 // models/etudiant.model.js
 
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/db'); // 👈 bien le fichier de config
+const sequelize = require('../config/db'); 
 
 const Etudiant = sequelize.define('Etudiant', {
   id: {
@@ -32,7 +32,7 @@ const Etudiant = sequelize.define('Etudiant', {
   },
 }, {
   tableName: 'etudiants',
-  timestamps: false, // désactiver createdAt / updatedAt si ta table n’en a pas
+  timestamps: false, 
 });
 
 module.exports = Etudiant;

@@ -1,20 +1,21 @@
-const express = require('express');
+﻿const express = require('express');
 const router = express.Router();
 const Etudiant = require('../models/Etudiant');
+const auth = require('../middelwares/auth');
 
-router.get('/', (req, res) => {
+router.get('/', auth(['admin', 'administratif']), (req, res) => {
   res.redirect('/etudiants');
 });
 
-router.get('/etudiants', (req, res) => {
+router.get('/etudiants', auth(['admin', 'administratif']), (req, res) => {
   res.render('etudiants/liste');
 });
 
-router.get('/etudiants/ajouter', (req, res) => {
+router.get('/etudiants/ajouter', auth(['admin', 'administratif']), (req, res) => {
   res.render('etudiants/ajouter');
 });
 
-router.get('/etudiants/modifier/:id', async (req, res) => {
+router.get('/etudiants/modifier/:id', auth(['admin', 'administratif']), async (req, res) => {
   try {
     const etudiant = await Etudiant.findByPk(req.params.id);
     if (!etudiant) return res.status(404).render('404', { title: 'Page non trouvee' });

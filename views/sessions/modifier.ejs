@@ -1,0 +1,86 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modifier une session</title>
+  <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+<body>
+  <%- include('../partials/navbar'); %>
+
+  <div class="container my-5">
+    <div class="card lift-card p-4">
+      <h1 class="section-title">Modifier une session</h1>
+
+      <form id="modifierSessionForm">
+        <div class="mb-3">
+          <label for="id_cours" class="form-label">Cours</label>
+          <select id="id_cours" class="form-select" required>
+            <% cours.forEach(c => { %>
+              <option value="<%= c.id %>" <%= String(c.id) === String(session.id_cours) ? 'selected' : '' %>><%= c.nom %></option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label for="date_debut" class="form-label">Date debut</label>
+          <input type="date" class="form-control" id="date_debut" value="<%= session.date_debut %>" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="date_fin" class="form-label">Date fin</label>
+          <input type="date" class="form-control" id="date_fin" value="<%= session.date_fin %>" required>
+        </div>
+
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" id="archivee" <%= session.archivee ? 'checked' : '' %>>
+          <label class="form-check-label" for="archivee">Session archivee</label>
+        </div>
+
+        <button type="submit" class="btn btn-accent">Enregistrer</button>
+        <a href="/sessions/inscriptions/<%= session.id %>" class="btn btn-outline-primary">Inscriptions</a>
+        <a href="/sessions/liste" class="btn btn-outline-secondary">Retour</a>
+      </form>
+
+      <div id="message" class="mt-3"></div>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('modifierSessionForm');
+    const messageDiv = document.getElementById('message');
+    const sessionId = <%= session.id %>;
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const payload = {
+        id_cours: document.getElementById('id_cours').value,
+        date_debut: document.getElementById('date_debut').value,
+        date_fin: document.getElementById('date_fin').value,
+        archivee: document.getElementById('archivee').checked,
+      };
+
+      try {
+        const response = await fetch(`/api/sessions/${sessionId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Erreur modification');
+
+        messageDiv.innerHTML = '<div class="alert alert-success">Session mise a jour avec succes.</div>';
+      } catch (error) {
+        messageDiv.innerHTML = `<div class="alert alert-danger">Erreur : ${error.message}</div>`;
+      }
+    });
+  </script>
+
+  <%- include('../partials/footer'); %>
+  <script src="/bootstrap/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
