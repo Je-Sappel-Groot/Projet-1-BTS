@@ -30,4 +30,4 @@ Scripts SQL disponibles dans le dossier `sql/`
 
 ### Auteur
 Projet réalisé individuellement par :
-Nom Prénom – BTS SIO SLAM
+Cottet-emard Corentin – BTS SIO SLAM
